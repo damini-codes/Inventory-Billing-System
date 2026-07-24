@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing - Inventory Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        :root { --primary: #667eea; --secondary: #764ba2; --dark: #2c3e50; --success: #2ecc71; --danger: #e74c3c; }
+        body { background: #f5f7fa; min-height: 100vh; }
+        
+        .sidebar {
+            position: fixed; left: 0; top: 0; width: 260px; height: 100%;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 20px; z-index: 100;
+        }
+        .sidebar-logo { text-align: center; padding: 20px 0 30px; }
+        .sidebar-logo .icon { width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 15px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .sidebar-logo .icon i { font-size: 28px; color: white; }
+        .sidebar-logo h2 { color: white; font-size: 18px; font-weight: 600; }
+        .nav-menu { list-style: none; }
+        .nav-menu li { margin-bottom: 8px; }
+        .nav-menu a { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: rgba(255,255,255,0.8); text-decoration: none; border-radius: 12px; transition: all 0.3s; font-size: 15px; }
+        .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.2); color: white; transform: translateX(5px); }
+        
+        .main-content { margin-left: 260px; padding: 30px; }
+        
+        .billing-container { max-width: 1200px; }
+        
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-header h1 { color: var(--dark); font-size: 28px; font-weight: 700; }
+        
+        .billing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        
+        .card {
+            background: white; border-radius: 20px; padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        
+        .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .card-header i { font-size: 20px; color: var(--primary); }
+        .card-header h2 { color: var(--dark); font-size: 18px; font-weight: 600; }
+        
+        .search-section { margin-bottom: 20px; }
+        .search-section label { display: block; color: #555; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+        
+        .input-group { display: flex; gap: 10px; }
+        
+        select, input[type="text"], input[type="number"] {
+            width: 100%; padding: 14px 16px; border: 2px solid #e0e0e0;
+            border-radius: 12px; font-size: 14px; transition: all 0.3s; background: #f8f9fa;
+        }
+        select:focus, input:focus { outline: none; border-color: var(--primary); background: #fff; }
+        
+        .btn {
+            padding: 14px 24px; border-radius: 12px; border: none; cursor: pointer;
+            font-weight: 600; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102,126,234,0.4); }
+        .btn-success { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(46,204,113,0.4); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        
+        .btn-sm { padding: 8px 12px; font-size: 13px; border-radius: 8px; }
+        
+        .items-table { width: 100%; border-collapse: collapse; }
+        .items-table th { text-align: left; padding: 14px; background: #f8f9fa; color: #888; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .items-table td { padding: 14px; color: var(--dark); font-size: 14px; border-bottom: 1px solid #f5f5f5; }
+        .items-table input[type="number"] { width: 70px; padding: 8px; }
+        
+        .total-section {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 15px; padding: 20px; color: white; margin-top: 20px;
+        }
+        .total-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .total-row.grand { font-size: 24px; font-weight: 700; padding-top: 10px; border-top: 2px solid rgba(255,255,255,0.3); }
+        
+        .action-buttons { display: flex; gap: 15px; margin-top: 20px; }
+        .action-buttons .btn { flex: 1; justify-content: center; }
+        
+        .product-list-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: white; border: 1px solid #e0e0e0; border-radius: 12px;
+            max-height: 250px; overflow-y: auto; z-index: 1000;
+            display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .product-list-dropdown.show { display: block; }
+        .product-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f5f5f5; transition: all 0.2s; }
+        .product-item:hover { background: #f8f9fa; }
+        .product-item .name { font-weight: 500; color: var(--dark); }
+        .product-item .details { font-size: 12px; color: #888; }
+        
+        .search-wrapper { position: relative; }
+        
+        .customer-select { width: 100%; }
+        
+        .empty-state { text-align: center; padding: 40px; color: #888; }
+        .empty-state i { font-size: 48px; margin-bottom: 15px; opacity: 0.3; }
+        
+        .success-message {
+            background: #d4edda; border: 1px solid #c3e6cb; color: #155724;
+            padding: 15px 20px; border-radius: 12px; margin-bottom: 20px;
+            display: none;
+        }
+        .success-message.show { display: block; animation: slideDown 0.3s ease; }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="icon"><i class="fas fa-boxes-stacked"></i></div>
+            <h2>Inventory System</h2>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="{% url 'dashboard' %}"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="/billing/" class="active"><i class="fas fa-calculator"></i> Billing</a></li>
+            <li><a href="{% url 'product_list' %}"><i class="fas fa-box"></i> Products</a></li>
+            <li><a href="{% url 'category_list' %}"><i class="fas fa-tags"></i> Categories</a></li>
+            <li><a href="{% url 'customer_list' %}"><i class="fas fa-users"></i> Customers</a></li>
+            <li><a href="{% url 'invoice_list' %}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
+            <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="billing-container">
+            <div class="page-header">
+                <h1><i class="fas fa-calculator"></i> Invoice Generator</h1>
+                <a href="{% url 'invoice_list' %}" class="btn btn-primary"><i class="fas fa-file-invoice-dollar"></i> View All Invoices</a>
+            </div>
+            
+            <div class="success-message" id="successMessage">
+                <i class="fas fa-check-circle"></i> Invoice saved successfully!
+            </div>
+            
+            <div class="billing-grid">
+                <!-- Left Side: Product & Customer -->
+                <div>
+                    <!-- Customer Details -->
+                    <div class="card" style="margin-bottom: 25px;">
+                        <div class="card-header">
+                            <i class="fas fa-user"></i>
+                            <h2>Customer Details</h2>
+                        </div>
+                        <div class="search-section">
+                            <label>Select Customer</label>
+                            <select id="customerSelect" class="customer-select">
+                                <option value="">-- Walk-in Customer --</option>
+                                {% for customer in customers %}
+                                <option value="{{ customer.id }}">{{ customer.name }} - {{ customer.phone_number }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Add Product -->
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-box"></i>
+                            <h2>Add Product</h2>
+                        </div>
+                        
+                        <div class="search-section">
+                            <label>Search by Barcode or Name</label>
+                            <div class="input-group">
+                                <div class="search-wrapper" style="flex: 1;">
+                                    <input type="text" id="barcode_input" placeholder="Type barcode or product name..." autocomplete="off">
+                                    <div class="product-list-dropdown" id="productDropdown"></div>
+                                </div>
+                                <button class="btn btn-primary" onclick="addSelectedProduct()">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="search-section">
+                            <label>Or Select from List</label>
+                            <select id="productSelect">
+                                <option value="">-- Select Product --</option>
+                                {% for product in products %}
+                                <option value="{{ product.id }}" data-name="{{ product.name }}" data-price="{{ product.selling_price }}" data-gst="{{ product.gst_percent }}" data-stock="{{ product.quantity }}">
+                                    {{ product.name }} - ₹{{ product.selling_price }} (Stock: {{ product.quantity }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-primary" style="width: 100%;" onclick="addFromDropdown()">
+                            <i class="fas fa-cart-plus"></i> Add Selected Product
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Right Side: Invoice Items -->
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-list"></i>
+                            <h2>Invoice Items</h2>
+                        </div>
+                        
+                        <div id="itemsContainer">
+                            <table class="items-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Qty</th>
+                                        <th>GST</th>
+                                        <th>Total</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoice_table_body">
+                                </tbody>
+                            </table>
+                            
+                            <div class="empty-state" id="emptyState">
+                                <i class="fas fa-shopping-cart"></i>
+                                <p>No products added yet</p>
+                                <small>Add products using the search or dropdown</small>
+                            </div>
+                        </div>
+                        
+                        <div class="total-section" id="totalSection" style="display: none;">
+                            <div class="total-row">
+                                <span>Subtotal</span>
+                                <span id="subtotal">₹0.00</span>
+                            </div>
+                            <div class="total-row">
+                                <span>GST Amount</span>
+                                <span id="gstAmount">₹0.00</span>
+                            </div>
+                            <div class="total-row grand">
+                                <span>Grand Total</span>
+                                <span id="grandTotal">₹0.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-danger" onclick="clearInvoice()">
+                                <i class="fas fa-trash"></i> Clear All
+                            </button>
+                            <button class="btn btn-success" onclick="saveInvoice()">
+                                <i class="fas fa-save"></i> Save Invoice
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let invoiceItems = [];
+        let allProducts = [
+            {% for product in products %}
+            {
+                id: {{ product.id }},
+                name: "{{ product.name }}",
+                price: {{ product.selling_price }},
+                gst: {{ product.gst_percent }},
+                stock: {{ product.quantity }}
+            },
+            {% endfor %}
+        ];
+        
+        document.getElementById('barcode_input').addEventListener('input', function(e) {
+            const query = this.value.toLowerCase().trim();
+            const dropdown = document.getElementById('productDropdown');
+            
+            if (query.length < 1) {
+                dropdown.classList.remove('show');
+                return;
+            }
+            
+            const filtered = allProducts.filter(p => 
+                p.name.toLowerCase().includes(query) || String(p.id).includes(query)
+            );
+            
+            if (filtered.length > 0) {
+                dropdown.innerHTML = filtered.map(p => `
+                    <div class="product-item" onclick="selectProduct(${p.id})">
+                        <div class="name">${p.name}</div>
+                        <div class="details">₹${p.price} | GST: ${p.gst}% | Stock: ${p.stock}</div>
+                    </div>
+                `).join('');
+                dropdown.classList.add('show');
+            } else {
+                dropdown.classList.remove('show');
+            }
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-wrapper')) {
+                document.getElementById('productDropdown').classList.remove('show');
+            }
+        });
+        
+        document.getElementById('barcode_input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = this.value.trim();
+                if (query) {
+                    fetchProduct(query);
+                    this.value = '';
+                }
+            }
+        });
+        
+        function selectProduct(id) {
+            const product = allProducts.find(p => p.id === id);
+            if (product) {
+                addProductToInvoice(product);
+                document.getElementById('barcode_input').value = '';
+                document.getElementById('productDropdown').classList.remove('show');
+            }
+        }
+        
+        function addSelectedProduct() {
+            const query = document.getElementById('barcode_input').value.trim();
+            if (query) {
+                fetchProduct(query);
+                document.getElementById('barcode_input').value = '';
+            }
+        }
+        
+        function addFromDropdown() {
+            const select = document.getElementById('productSelect');
+            const productId = select.value;
+            if (!productId) {
+                alert('Please select a product first');
+                return;
+            }
+            
+            const product = allProducts.find(p => p.id == productId);
+            if (product) {
+                addProductToInvoice(product);
+                select.value = '';
+            }
+        }
+        
+        function fetchProduct(query) {
+            fetch(`/search_product/?query=${query}`)
+                .then(response => response.json())
+                .then(product => {
+                    if (product.error) {
+                        alert(product.error);
+                    } else {
+                        addProductToInvoice({
+                            id: product.id,
+                            name: product.name,
+                            price: parseFloat(product.selling_price),
+                            gst: parseFloat(product.gst_percent),
+                            stock: product.quantity_in_stock
+                        });
+                    }
+                })
+                .catch(error => {
+                    alert('Product not found!');
+                });
+        }
+        
+        function addProductToInvoice(product) {
+            if (product.stock <= 0) {
+                alert('Product out of stock!');
+                return;
+            }
+            
+            const existingIndex = invoiceItems.findIndex(item => item.product_id === product.id);
+            
+            if (existingIndex >= 0) {
+                if (invoiceItems[existingIndex].qty < product.stock) {
+                    invoiceItems[existingIndex].qty += 1;
+                    recalculateItem(existingIndex);
+                } else {
+                    alert('Not enough stock available!');
+                }
+            } else {
+                const sellingPrice = product.price;
+                const gstPercent = product.gst;
+                const gstAmount = sellingPrice * (gstPercent / 100);
+                const totalIncGst = sellingPrice + gstAmount;
+                
+                invoiceItems.push({
+                    product_id: product.id,
+                    name: product.name,
+                    price: sellingPrice,
+                    qty: 1,
+                    gst: gstPercent,
+                    total_inc_gst: totalIncGst
+                });
+            }
+            renderInvoiceTable();
+        }
+        
+        function updateItemQuantity(index, newQty) {
+            const qty = parseInt(newQty) > 0 ? parseInt(newQty) : 1;
+            invoiceItems[index].qty = qty;
+            recalculateItem(index);
+            renderInvoiceTable();
+        }
+        
+        function recalculateItem(index) {
+            const item = invoiceItems[index];
+            const gstAmount = item.price * (item.gst / 100);
+            item.total_inc_gst = (item.price + gstAmount) * item.qty;
+        }
+        
+        function renderInvoiceTable() {
+            const tbody = document.getElementById('invoice_table_body');
+            const emptyState = document.getElementById('emptyState');
+            const totalSection = document.getElementById('totalSection');
+            
+            if (invoiceItems.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                totalSection.style.display = 'none';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            totalSection.style.display = 'block';
+            
+            tbody.innerHTML = invoiceItems.map((item, index) => `
+                <tr>
+                    <td><strong>${item.name}</strong></td>
+                    <td>₹${item.price.toFixed(2)}</td>
+                    <td><input type="number" value="${item.qty}" min="1" onchange="updateItemQuantity(${index}, this.value)"></td>
+                    <td>${item.gst.toFixed(2)}%</td>
+                    <td><strong>₹${item.total_inc_gst.toFixed(2)}</strong></td>
+                    <td><button class="btn btn-sm btn-danger" onclick="removeItem(${index})"><i class="fas fa-times"></i></button></td>
+                </tr>
+            `).join('');
+            
+            updateTotals();
+        }
+        
+        function updateTotals() {
+            let subtotal = 0;
+            let totalGst = 0;
+            
+            invoiceItems.forEach(item => {
+                const basePrice = item.price * item.qty;
+                const gstAmount = basePrice * (item.gst / 100);
+                subtotal += basePrice;
+                totalGst += gstAmount;
+            });
+            
+            const grandTotal = subtotal + totalGst;
+            
+            document.getElementById('subtotal').textContent = '₹' + subtotal.toFixed(2);
+            document.getElementById('gstAmount').textContent = '₹' + totalGst.toFixed(2);
+            document.getElementById('grandTotal').textContent = '₹' + grandTotal.toFixed(2);
+        }
+        
+        function removeItem(index) {
+            invoiceItems.splice(index, 1);
+            renderInvoiceTable();
+        }
+        
+        function clearInvoice() {
+            if (invoiceItems.length > 0 && confirm('Clear all items from invoice?')) {
+                invoiceItems = [];
+                renderInvoiceTable();
+            }
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        function saveInvoice() {
+            if (invoiceItems.length === 0) {
+                alert('Please add at least one product!');
+                return;
+            }
+            
+            const customerId = document.getElementById('customerSelect').value;
+            const subtotal = invoiceItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const grandTotal = parseFloat(document.getElementById('grandTotal').textContent.replace('₹', ''));
+            
+            const dataToSend = {
+                items: invoiceItems,
+                total_amount: subtotal.toFixed(2),
+                grand_total: grandTotal.toFixed(2),
+                customer_id: customerId || null
+            };
+            
+            fetch('/save_invoice/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(dataToSend)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    document.getElementById('successMessage').classList.add('show');
+                    setTimeout(() => {
+                        document.getElementById('successMessage').classList.remove('show');
+                    }, 5000);
+                    
+                    invoiceItems = [];
+                    renderInvoiceTable();
+                    
+                    // Show options after successful save
+                    const invoiceNumber = data.invoice_number;
+                    const customerPhone = data.customer_phone;
+                    
+                    let message = 'Invoice ' + invoiceNumber + ' saved successfully!\n\n';
+                    message += 'What would you like to do?\n\n';
+                    message += '1. Download PDF (Save to computer)\n';
+                    if (customerPhone) {
+                        message += '2. Send to customer WhatsApp: ' + customerPhone + '\n';
+                    }
+                    message += '3. Just close';
+                    
+                    const choice = prompt(message);
+                    
+                    if (choice === '1') {
+                        // Open PDF download in new tab
+                        window.open('/billing/invoices/' + data.invoice_id + '/pdf/', '_blank');
+                    } else if (choice === '2' && customerPhone) {
+                        // Create WhatsApp message link
+                        const invoiceUrl = window.location.origin + '/billing/invoices/' + data.invoice_id + '/pdf/';
+                        const waMessage = encodeURIComponent('Thank you for your purchase!\n\nInvoice No: ' + invoiceNumber + '\nTotal: ₹' + grandTotal.toFixed(2) + '\n\nView Invoice: ' + invoiceUrl);
+                        window.open('https://wa.me/' + customerPhone + '?text=' + waMessage, '_blank');
+                    }
+                }
+            })
+            .catch(error => {
+                alert('Error saving invoice: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ invoice.invoice_number }} - Inventory Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        :root { --primary: #667eea; --secondary: #764ba2; --dark: #2c3e50; }
+        body { background: #f5f7fa; min-height: 100vh; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100%; background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%); padding: 20px; z-index: 100; }
+        .sidebar-logo { text-align: center; padding: 20px 0 30px; }
+        .sidebar-logo .icon { width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 15px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .sidebar-logo .icon i { font-size: 28px; color: white; }
+        .sidebar-logo h2 { color: white; font-size: 18px; font-weight: 600; }
+        .nav-menu { list-style: none; }
+        .nav-menu li { margin-bottom: 8px; }
+        .nav-menu a { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: rgba(255,255,255,0.8); text-decoration: none; border-radius: 12px; transition: all 0.3s; font-size: 15px; }
+        .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.2); color: white; transform: translateX(5px); }
+        .main-content { margin-left: 260px; padding: 30px; }
+        .btn { padding: 12px 24px; border-radius: 12px; border: none; cursor: pointer; font-weight: 500; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+        .btn-secondary { background: #95a5a6; color: white; text-decoration: none; }
+        .invoice-container { max-width: 800px; margin: 0 auto; }
+        .invoice-box { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; }
+        .invoice-header { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 30px; }
+        .invoice-header h1 { font-size: 32px; font-weight: 700; margin-bottom: 10px; }
+        .invoice-header p { opacity: 0.9; font-size: 14px; }
+        .invoice-details { padding: 30px; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
+        .detail-label { color: #888; font-size: 14px; }
+        .detail-value { color: var(--dark); font-weight: 500; }
+        .invoice-items { padding: 0 30px 30px; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { text-align: left; padding: 14px; background: #f8f9fa; color: #888; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .table td { padding: 14px; color: var(--dark); font-size: 14px; border-bottom: 1px solid #f5f5f5; }
+        .invoice-totals { background: #f8f9fa; padding: 20px 30px; }
+        .total-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .total-row.final { font-size: 18px; font-weight: 700; color: var(--primary); padding-top: 10px; border-top: 2px solid #e0e0e0; }
+        .invoice-actions { padding: 20px 30px; display: flex; gap: 15px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="icon"><i class="fas fa-boxes-stacked"></i></div>
+            <h2>Inventory System</h2>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="{% url 'dashboard' %}"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="/billing/"><i class="fas fa-calculator"></i> Billing</a></li>
+            <li><a href="{% url 'product_list' %}"><i class="fas fa-box"></i> Products</a></li>
+            <li><a href="{% url 'category_list' %}"><i class="fas fa-tags"></i> Categories</a></li>
+            <li><a href="{% url 'customer_list' %}"><i class="fas fa-users"></i> Customers</a></li>
+            <li><a href="{% url 'invoice_list' %}" class="active"><i class="fas fa-file-invoice"></i> Invoices</a></li>
+            <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="invoice-container">
+            <div class="invoice-box">
+                <div class="invoice-header">
+                    <h1>Invoice {{ invoice.invoice_number }}</h1>
+                    <p>Generated on {{ invoice.date|date:"F d, Y at H:i" }}</p>
+                </div>
+                <div class="invoice-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Customer</span>
+                        <span class="detail-value">{{ invoice.customer.name|default:"Walk-in Customer" }}</span>
+                    </div>
+                    {% if invoice.customer.phone_number %}
+                    <div class="detail-row">
+                        <span class="detail-label">Phone</span>
+                        <span class="detail-value">{{ invoice.customer.phone_number }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="invoice-items">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Qty</th>
+                                <th>Unit Price</th>
+                                <th>GST %</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td>{{ item.product.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>₹{{ item.unit_price }}</td>
+                                <td>{{ item.gst_percent }}%</td>
+                                <td>₹{{ item.total|default:item.quantity|add:item.unit_price }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="invoice-totals">
+                    <div class="total-row">
+                        <span>Subtotal</span>
+                        <span>₹{{ invoice.total_amount }}</span>
+                    </div>
+                    <div class="total-row final">
+                        <span>Grand Total</span>
+                        <span>₹{{ invoice.grand_total }}</span>
+                    </div>
+                </div>
+                <div class="invoice-actions">
+                    <a href="{% url 'invoice_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Invoices</a>
+                    <a href="{% url 'download_invoice_pdf' invoice.id %}" class="btn btn-primary" target="_blank"><i class="fas fa-download"></i> Download PDF</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

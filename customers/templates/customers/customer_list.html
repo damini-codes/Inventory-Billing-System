@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers - Inventory Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        :root { --primary: #667eea; --secondary: #764ba2; --dark: #2c3e50; --success: #2ecc71; }
+        body { background: #f5f7fa; min-height: 100vh; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100%; background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%); padding: 20px; z-index: 100; }
+        .sidebar-logo { text-align: center; padding: 20px 0 30px; }
+        .sidebar-logo .icon { width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 15px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .sidebar-logo .icon i { font-size: 28px; color: white; }
+        .sidebar-logo h2 { color: white; font-size: 18px; font-weight: 600; }
+        .nav-menu { list-style: none; }
+        .nav-menu li { margin-bottom: 8px; }
+        .nav-menu a { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: rgba(255,255,255,0.8); text-decoration: none; border-radius: 12px; transition: all 0.3s; font-size: 15px; }
+        .nav-menu a:hover, .nav-menu a.active { background: rgba(255,255,255,0.2); color: white; transform: translateX(5px); }
+        .main-content { margin-left: 260px; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--dark); font-size: 28px; font-weight: 700; }
+        .btn { padding: 12px 24px; border-radius: 12px; border: none; cursor: pointer; font-weight: 500; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102,126,234,0.4); }
+        .card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .card-header h2 { color: var(--dark); font-size: 22px; font-weight: 600; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { text-align: left; padding: 16px; color: #888; font-size: 13px; font-weight: 600; text-transform: uppercase; border-bottom: 2px solid #f0f0f0; }
+        .table td { padding: 16px; color: var(--dark); font-size: 14px; border-bottom: 1px solid #f5f5f5; }
+        .table tr:hover td { background: #f9f9f9; }
+        .customer-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-weight: 600; margin-right: 12px; }
+        .customer-info { display: flex; align-items: center; }
+        .action-btns { display: flex; gap: 8px; }
+        .action-btns a { width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .action-btns .edit { background: #e3f2fd; color: #1976d2; }
+        .action-btns .edit:hover { background: #1976d2; color: white; }
+        .action-btns .delete { background: #ffebee; color: #c62828; }
+        .action-btns .delete:hover { background: #c62828; color: white; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="icon"><i class="fas fa-boxes-stacked"></i></div>
+            <h2>Inventory System</h2>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="{% url 'dashboard' %}"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="/billing/"><i class="fas fa-calculator"></i> Billing</a></li>
+            <li><a href="{% url 'product_list' %}"><i class="fas fa-box"></i> Products</a></li>
+            <li><a href="{% url 'category_list' %}"><i class="fas fa-tags"></i> Categories</a></li>
+            <li><a href="{% url 'customer_list' %}" class="active"><i class="fas fa-users"></i> Customers</a></li>
+            <li><a href="{% url 'invoice_list' %}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
+            <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h1>Customers</h1>
+            <a href="{% url 'customer_add' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Customer</a>
+        </div>
+        <div class="card">
+            <div class="card-header" style="margin-bottom: 25px;"><h2><i class="fas fa-users"></i> All Customers</h2></div>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Address</th>
+                            <th>Added Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td>
+                                <div class="customer-info">
+                                    <div class="customer-avatar">{{ customer.name|make_list|first|upper }}</div>
+                                    <strong>{{ customer.name }}</strong>
+                                </div>
+                            </td>
+                            <td>{{ customer.phone_number }}</td>
+                            <td>{{ customer.email|default:"-" }}</td>
+                            <td>{{ customer.address|default:"-"|truncatechars:30 }}</td>
+                            <td>{{ customer.date_added|date:"M d, Y" }}</td>
+                            <td>
+                                <div class="action-btns">
+                                    <a href="{% url 'customer_edit' customer.id %}" class="edit"><i class="fas fa-edit"></i></a>
+                                    <a href="{% url 'customer_delete' customer.id %}" class="delete" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" style="text-align: center; padding: 40px;">No customers yet. Add your first customer!</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

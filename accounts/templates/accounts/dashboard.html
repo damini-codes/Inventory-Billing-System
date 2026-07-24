@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Inventory Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+        
+        body {
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 20px;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-logo {
+            text-align: center;
+            padding: 20px 0 30px;
+        }
+        
+        .sidebar-logo .icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-logo .icon i {
+            font-size: 28px;
+            color: white;
+        }
+        
+        .sidebar-logo h2 {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-menu li {
+            margin-bottom: 8px;
+        }
+        
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s;
+            font-size: 15px;
+        }
+        
+        .nav-menu a:hover, .nav-menu a.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .nav-menu a i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: var(--dark);
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .user-info span {
+            color: var(--dark);
+            font-weight: 500;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            animation: slideUp 0.5s ease-out;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stat-card .icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card .icon i {
+            font-size: 24px;
+            color: white;
+        }
+        
+        .stat-card.blue .icon { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .stat-card.green .icon { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .stat-card.orange .icon { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .stat-card.red .icon { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        
+        .stat-card h3 {
+            color: #888;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .stat-card .value {
+            color: var(--dark);
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .stat-card .label {
+            color: #999;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        
+        .alert-box {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-left: 4px solid #f39c12;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .alert-box .alert-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #856404;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .alert-box .alert-list {
+            list-style: none;
+        }
+        
+        .alert-box .alert-list li {
+            padding: 8px 0;
+            color: #856404;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .alert-box .alert-list li i {
+            color: #f39c12;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        
+        .content-card h2 {
+            color: var(--dark);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .content-card h2 i {
+            color: var(--primary);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            text-align: left;
+            padding: 12px;
+            color: #888;
+            font-size: 13px;
+            font-weight: 500;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .table td {
+            padding: 14px 12px;
+            color: var(--dark);
+            font-size: 14px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .table tr:hover td {
+            background: #f9f9f9;
+        }
+        
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102,126,234,0.4);
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .quick-actions .btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="icon">
+                <i class="fas fa-boxes-stacked"></i>
+            </div>
+            <h2>Inventory System</h2>
+        </div>
+        
+        <ul class="nav-menu">
+            <li><a href="{% url 'dashboard' %}" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="/billing/"><i class="fas fa-calculator"></i> Billing</a></li>
+            <li><a href="{% url 'product_list' %}"><i class="fas fa-box"></i> Products</a></li>
+            <li><a href="{% url 'category_list' %}"><i class="fas fa-tags"></i> Categories</a></li>
+            <li><a href="{% url 'customer_list' %}"><i class="fas fa-users"></i> Customers</a></li>
+            <li><a href="{% url 'invoice_list' %}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
+            <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="header">
+            <h1>Dashboard</h1>
+            <div class="user-info">
+                <span>Welcome, {{ user.username }}</span>
+                <div class="user-avatar">{{ user.username|make_list|first|upper }}</div>
+            </div>
+        </div>
+        
+        <div class="quick-actions">
+            <a href="/billing/" class="btn btn-primary"><i class="fas fa-plus"></i> New Invoice</a>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <div class="icon"><i class="fas fa-box"></i></div>
+                <h3>Total Products</h3>
+                <div class="value">{{ total_products }}</div>
+                <div class="label">Items in inventory</div>
+            </div>
+            <div class="stat-card red">
+                <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <h3>Low Stock Items</h3>
+                <div class="value">{{ low_stock_products }}</div>
+                <div class="label">Need restocking</div>
+            </div>
+            <div class="stat-card green">
+                <div class="icon"><i class="fas fa-users"></i></div>
+                <h3>Total Customers</h3>
+                <div class="value">{{ total_customers }}</div>
+                <div class="label">Registered customers</div>
+            </div>
+            <div class="stat-card orange">
+                <div class="icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                <h3>Total Invoices</h3>
+                <div class="value">{{ total_invoices }}</div>
+                <div class="label">Bills generated</div>
+            </div>
+        </div>
+        
+        {% if low_stock_products > 0 %}
+        <div class="alert-box">
+            <div class="alert-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                Low Stock Alert - {{ low_stock_products }} products need attention
+            </div>
+            <ul class="alert-list">
+                {% for product in recent_products %}
+                    {% if product.quantity < 10 %}
+                    <li><i class="fas fa-angle-right"></i> {{ product.name }} - Only {{ product.quantity }} left</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        <div class="content-grid">
+            <div class="content-card">
+                <h2><i class="fas fa-clock"></i> Recent Invoices</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Invoice No.</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in recent_invoices %}
+                        <tr>
+                            <td>{{ invoice.invoice_number }}</td>
+                            <td>{{ invoice.date|date:"M d, Y" }}</td>
+                            <td>₹{{ invoice.grand_total }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3">No invoices yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="content-card">
+                <h2><i class="fas fa-box"></i> Recent Products</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in recent_products %}
+                        <tr>
+                            <td>{{ product.name }}</td>
+                            <td>₹{{ product.selling_price }}</td>
+                            <td>
+                                {% if product.quantity < 10 %}
+                                <span class="badge warning">{{ product.quantity }}</span>
+                                {% else %}
+                                <span class="badge success">{{ product.quantity }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3">No products yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
